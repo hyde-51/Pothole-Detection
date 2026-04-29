@@ -49,5 +49,5 @@ Built as a Major Project, this system moves beyond simple bounding boxes by fusi
 
 ### 1. Clone the Repository
 ```bash
-git clone [https://github.com/yourusername/pothole-detection-system.git](https://github.com/yourusername/pothole-detection-system.git)
-cd pothole-detection-system
+git clone [https://github.com/hyde-51/Pothole-Detection.git](https://github.com/hyde-51/Pothole-Detection.git)
+cd Pothole-Detection
