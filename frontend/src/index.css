@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 🌟 PREMIUM LIGHT MODE 🌟 */
+:root {
+  --bg-primary: #f4f7f9; /* A very soft, expensive-looking cool gray */
+  --bg-secondary: #ffffff; /* Pure white floating cards */
+  --text-primary: #0f172a; /* Deep slate for high contrast */
+  --text-secondary: #64748b; /* Softer slate for subtitles */
+  --border-color: #e2e8f0; /* Barely visible borders */
+  
+  /* The New Accent: Rich Indigo */
+  --accent: #4f46e5; 
+  --accent-glow: rgba(79, 70, 229, 0.4);
+  
+  /* The Secret to Premium UI: Massive, incredibly soft shadows */
+  --card-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.03);
+}
+
+/* 🌙 PREMIUM DARK MODE (OLED STYLE) 🌙 */
+[data-theme='dark'] {
+  --bg-primary: #09090b; /* Almost pitch black */
+  --bg-secondary: #18181b; /* Slightly raised dark cards */
+  --text-primary: #fafafa; /* Crisp white */
+  --text-secondary: #a1a1aa; /* Soft zinc */
+  --border-color: #27272a; /* Deep borders */
+  
+  /* The New Accent: Electric Indigo */
+  --accent: #6366f1; 
+  --accent-glow: rgba(99, 102, 241, 0.5);
+  
+  /* Dark mode shadows need to be much darker to show depth */
+  --card-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255,255,255,0.05);
+}
+
+/* FULL SCREEN FIXES */
+html, body, #root {
+  width: 100vw;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  /* Added a background mesh effect for light mode */
+  background-image: radial-gradient(var(--border-color) 1px, transparent 1px);
+  background-size: 30px 30px;
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+[data-theme='dark'] body {
+  /* Fades out the mesh pattern in dark mode for a sleeker look */
+  background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px);
+}
+
+/* CUSTOM ANIMATIONS */
+@keyframes scanLine { 
+  0% { top: 0; } 
+  50% { top: calc(100% - 2px); } 
+  100% { top: 0; } 
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
