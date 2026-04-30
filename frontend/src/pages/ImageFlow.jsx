@@ -8,11 +8,17 @@ import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import L from 'leaflet';
 
+
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
+
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconUrl: markerIcon,
+  iconRetinaUrl: markerIcon2x,
+  shadowUrl: markerShadow,
 });
 
 export default function ImageFlow() {
@@ -325,7 +331,7 @@ export default function ImageFlow() {
                 
                 <div className="grid grid-cols-2 gap-4">
                   <StatCard icon={<AlertTriangle size={24} className="text-red-500"/>} title="Total Detected" value={results.total_potholes_detected} />
-                  <StatCard icon={<Activity size={24} className="text-blue-500"/>} title="Severity Score" value={results.potholes.length > 0 ? results.potholes[0].severity : "None"} />
+                  <StatCard icon={<Activity size={24} className="text-blue-500"/>} title="Severity Score" value={results.potholes?.length > 0 ? results.potholes[0].severity : "None"} />
                 </div>
 
                 {/* Material Panel */}
