@@ -240,7 +240,7 @@ export default function ImageFlow() {
             <div className="flex flex-col gap-5">
               <div>
                 <label className="block text-sm text-muted mb-2 font-medium">Camera Distance to Damage (meters)</label>
-                <input type="number" placeholder="e.g. 5" value={metadata.distance} onChange={(e) => setMetadata({...metadata, distance: e.target.value})} className="w-full p-3 rounded-lg border border-borderline bg-primary text-content focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all" />
+                <input type="number" required placeholder="e.g. 5" value={metadata.distance} onChange={(e) => setMetadata({...metadata, distance: e.target.value})} className="w-full p-3 rounded-lg border border-borderline bg-primary text-content focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all" />
               </div>
               <div className="flex gap-4">
                 <div className="flex-1">

@@ -55,13 +55,13 @@ class PotholeDetector:
                 }
                 
         except Exception as e:
-            print(f"EXIF parsing error: {e}")
+            print(f"EXIF parsing error/missing data: {e}")
 
-        # THE PRESENTATION FALLBACK
-        # If the friend forgot to turn on Location Tags, default to Pune so your demo looks great!
+        # THE "REAL WORLD" BEHAVIOR
+        # If no data is found, return None so the React frontend shows the warning UI
         return {
-            "latitude": "18.5204", 
-            "longitude": "73.8567"
+            "latitude": None, 
+            "longitude": None
         }
 
     def estimate_size(self, box, image_width, image_height):
