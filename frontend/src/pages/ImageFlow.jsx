@@ -1,18 +1,677 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import { UploadCloud, MapPin, Activity, AlertTriangle, Truck, ArrowLeft, Download } from 'lucide-react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import html2canvas from 'html2canvas';
-import { jsPDF } from 'jspdf';
-import L from 'leaflet';
+// import React, { useState } from "react";
+// import { useNavigate } from "react-router-dom";
+// import axios from "axios";
+// import {
+//   UploadCloud,
+//   MapPin,
+//   ArrowLeft,
+//   Download,
+//   FileImage,
+//   Gauge,
+//   Camera,
+//   CheckCircle2,
+// } from "lucide-react";
 
+// import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+// import "leaflet/dist/leaflet.css";
 
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+// import html2canvas from "html2canvas";
+// import { jsPDF } from "jspdf";
 
+// import L from "leaflet";
+// import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
+// import markerIcon from "leaflet/dist/images/marker-icon.png";
+// import markerShadow from "leaflet/dist/images/marker-shadow.png";
+
+// delete L.Icon.Default.prototype._getIconUrl;
+// L.Icon.Default.mergeOptions({
+//   iconUrl: markerIcon,
+//   iconRetinaUrl: markerIcon2x,
+//   shadowUrl: markerShadow,
+// });
+
+// export default function ImageFlow() {
+//   const navigate = useNavigate();
+
+//   const [step, setStep] = useState(1);
+//   const [file, setFile] = useState(null);
+//   const [previewUrl, setPreviewUrl] = useState(null);
+//   const [uploadProgress, setUploadProgress] = useState(0);
+
+//   const [metadata, setMetadata] = useState({
+//     distance: "",
+//     traffic: "Medium",
+//     zone: "Urban",
+//     time: "",
+//   });
+
+//   const [processingText, setProcessingText] = useState(
+//     "Initializing AI Engine...",
+//   );
+
+//   const [results, setResults] = useState(null);
+//   const [error, setError] = useState(null);
+//   const [isExporting, setIsExporting] = useState(false);
+
+//   const handleFileChange = (e) => {
+//     const selectedFile = e.target.files[0];
+
+//     if (selectedFile) {
+//       setFile(selectedFile);
+//       setPreviewUrl(URL.createObjectURL(selectedFile));
+//       setError(null);
+
+//       let progress = 0;
+//       const interval = setInterval(() => {
+//         progress += 20;
+//         setUploadProgress(progress);
+
+//         if (progress >= 100) {
+//           clearInterval(interval);
+//           setTimeout(() => setStep(2), 500);
+//         }
+//       }, 150);
+//     }
+//   };
+
+//   const startProcessing = async () => {
+//     setStep(3);
+
+//     const texts = [
+//       "Analyzing surface damage...",
+//       "Estimating pothole depth...",
+//       "Calculating material requirement...",
+//       "Extracting telemetry...",
+//     ];
+
+//     let i = 0;
+//     const textInterval = setInterval(() => {
+//       setProcessingText(texts[i % texts.length]);
+//       i++;
+//     }, 1500);
+
+//     const formData = new FormData();
+//     formData.append("file", file);
+
+//     try {
+//       const response = await axios.post(
+//         "http://localhost:8000/analyze",
+//         formData,
+//         {
+//           headers: { "Content-Type": "multipart/form-data" },
+//         },
+//       );
+
+//       clearInterval(textInterval);
+//       setResults(response.data);
+//       setStep(4);
+//     } catch (err) {
+//       clearInterval(textInterval);
+//       setError("Failed to connect to AI server. Ensure backend is running.");
+//       setStep(1);
+//     }
+//   };
+
+//   const calculateMaterials = (damagePct) => {
+//     const estimatedAreaSqMeters = (damagePct / 100) * 9;
+//     const estimatedDepthCm = damagePct > 15 ? 12 : damagePct > 5 ? 7 : 4;
+//     const volume = estimatedAreaSqMeters * (estimatedDepthCm / 100);
+//     const totalWeightKg = volume * 2400;
+
+//     return {
+//       depth: estimatedDepthCm,
+//       area: estimatedAreaSqMeters.toFixed(2),
+//       bitumen: (totalWeightKg * 0.05).toFixed(1),
+//       gravel: (totalWeightKg * 0.95).toFixed(1),
+//       cost: "Rs. " + (totalWeightKg * 0.15 * 80).toFixed(2),
+//     };
+//   };
+//   const exportToPDF = async () => {
+//     setIsExporting(true);
+
+//     const element = document.getElementById("pdf-report-container");
+
+//     try {
+//       element.classList.add("pdf-light-mode");
+
+//       await new Promise((resolve) => setTimeout(resolve, 200));
+
+//       const canvas = await html2canvas(element, {
+//         scale: 2,
+//         useCORS: true,
+//         backgroundColor: "#ffffff",
+//         scrollY: -window.scrollY,
+//       });
+
+//       const imgData = canvas.toDataURL("image/png");
+//       const pdf = new jsPDF("p", "mm", "a4");
+
+//       const pdfWidth = pdf.internal.pageSize.getWidth();
+//       const pdfHeight = pdf.internal.pageSize.getHeight();
+
+//       const imgWidth = pdfWidth;
+//       const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+//       let heightLeft = imgHeight;
+//       let position = 0;
+
+//       pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+//       heightLeft -= pdfHeight;
+
+//       while (heightLeft > 0) {
+//         position = heightLeft - imgHeight;
+//         pdf.addPage();
+//         pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+//         heightLeft -= pdfHeight;
+//       }
+
+//       pdf.save(
+//         `Infrastructure_Report_${new Date().toISOString().split("T")[0]}.pdf`,
+//       );
+//     } catch (error) {
+//       console.error("PDF Export Error:", error);
+//       alert("Failed to generate PDF.");
+//     } finally {
+//       element.classList.remove("pdf-light-mode");
+//       setIsExporting(false);
+//     }
+//   };
+//   return (
+//     <div className="min-h-screen bg-primary text-content px-6 py-10 transition-colors duration-300">
+//       <div className="w-full max-w-[1500px] mx-auto px-4">
+//         {/* Header */}
+//         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5 mb-8 animate-fadeUp">
+//           <button
+//             onClick={() => navigate("/dashboard")}
+//             className="w-fit flex items-center gap-2 bg-secondary border border-borderline text-muted hover:text-content px-5 py-3 rounded-xl font-semibold transition-all"
+//           >
+//             <ArrowLeft size={20} />
+//             Back
+//           </button>
+
+//           <div className="text-center">
+//             <p className="text-accent text-sm font-semibold tracking-widest">
+//               IMAGE ANALYSIS MODULE
+//             </p>
+//             <h1 className="text-3xl md:text-4xl font-bold mt-1">
+//               High-Resolution Image Analysis
+//             </h1>
+//           </div>
+
+//           <div className="hidden md:flex items-center gap-2 bg-secondary border border-borderline px-5 py-3 rounded-xl">
+//             <Camera size={20} className="text-accent" />
+//             <span className="text-muted font-semibold text-sm">
+//               AI Engine Active
+//             </span>
+//           </div>
+//         </div>
+
+//         {/* Step Progress */}
+//         <div className="grid grid-cols-4 gap-3 mb-8 animate-fadeUp">
+//           <StepItem number="1" label="Upload" active={step >= 1} />
+//           <StepItem number="2" label="Metadata" active={step >= 2} />
+//           <StepItem number="3" label="AI Scan" active={step >= 3} />
+//           <StepItem number="4" label="Report" active={step >= 4} />
+//         </div>
+
+//         {error && (
+//           <div className="mb-6 bg-red-500/10 border border-red-500/30 text-red-500 rounded-2xl p-4 text-center font-semibold">
+//             {error}
+//           </div>
+//         )}
+
+//         {/* Step 1 Upload */}
+//         {step === 1 && (
+//           <div className="bg-secondary border border-borderline rounded-3xl p-8 md:p-14 text-center animate-fadeUp">
+//             <div className="w-20 h-20 rounded-2xl bg-primary border border-borderline mx-auto flex items-center justify-center text-accent mb-6">
+//               <UploadCloud size={42} />
+//             </div>
+
+//             <h2 className="text-2xl md:text-3xl font-bold mb-3">
+//               Upload Road Image
+//             </h2>
+
+//             <p className="text-muted text-lg mb-8">
+//               Drag and drop or browse road image for pothole detection.
+//             </p>
+
+//             <div className="max-w-xl mx-auto border-2 border-dashed border-borderline rounded-2xl p-8 bg-primary">
+//               <input
+//                 type="file"
+//                 id="fileUpload"
+//                 className="hidden"
+//                 onChange={handleFileChange}
+//                 accept="image/*"
+//               />
+
+//               <label
+//                 htmlFor="fileUpload"
+//                 className="inline-flex items-center gap-3 bg-accent text-white px-7 py-4 rounded-xl font-semibold cursor-pointer hover:opacity-90 transition-all"
+//               >
+//                 <FileImage size={22} />
+//                 Browse Image
+//               </label>
+
+//               <p className="text-muted text-sm mt-4">
+//                 Supports JPG, PNG, WEBP. Max size 10MB.
+//               </p>
+
+//               {uploadProgress > 0 && (
+//                 <div className="mt-8">
+//                   <div className="flex justify-between text-sm text-muted mb-2">
+//                     <span>Uploading...</span>
+//                     <span>{uploadProgress}%</span>
+//                   </div>
+
+//                   <div className="h-3 bg-secondary border border-borderline rounded-full overflow-hidden">
+//                     <div
+//                       className="h-full bg-accent rounded-full transition-all duration-300"
+//                       style={{ width: `${uploadProgress}%` }}
+//                     />
+//                   </div>
+//                 </div>
+//               )}
+//             </div>
+//           </div>
+//         )}
+
+//         {/* Step 2 Metadata */}
+//         {step === 2 && (
+//           <div className="grid md:grid-cols-2 gap-8 bg-secondary border border-borderline rounded-3xl p-6 md:p-8 animate-fadeUp">
+//             <div className="bg-primary border border-borderline rounded-2xl p-3">
+//               <img
+//                 src={previewUrl}
+//                 alt="Preview"
+//                 className="w-full max-h-[430px] object-cover rounded-xl"
+//               />
+//             </div>
+
+//             <div>
+//               <p className="text-accent text-sm font-semibold tracking-widest mb-2">
+//                 SITE DETAILS
+//               </p>
+
+//               <h2 className="text-2xl font-bold flex items-center gap-2 mb-6">
+//                 <MapPin size={24} className="text-accent" />
+//                 Telemetry Data
+//               </h2>
+
+//               <div className="space-y-5">
+//                 <div>
+//                   <label className="block text-sm text-muted font-semibold mb-2">
+//                     Camera Distance to Damage (meters)
+//                   </label>
+//                   <input
+//                     type="number"
+//                     placeholder="e.g. 5"
+//                     value={metadata.distance}
+//                     onChange={(e) =>
+//                       setMetadata({ ...metadata, distance: e.target.value })
+//                     }
+//                     className="w-full bg-primary border border-borderline text-content rounded-xl px-4 py-3 outline-none focus:border-accent transition-all"
+//                   />
+//                 </div>
+
+//                 <div className="grid md:grid-cols-2 gap-4">
+//                   <div>
+//                     <label className="block text-sm text-muted font-semibold mb-2">
+//                       Traffic Density
+//                     </label>
+//                     <select
+//                       value={metadata.traffic}
+//                       onChange={(e) =>
+//                         setMetadata({ ...metadata, traffic: e.target.value })
+//                       }
+//                       className="w-full bg-primary border border-borderline text-content rounded-xl px-4 py-3 outline-none focus:border-accent transition-all"
+//                     >
+//                       <option>Low</option>
+//                       <option>Medium</option>
+//                       <option>High</option>
+//                     </select>
+//                   </div>
+
+//                   <div>
+//                     <label className="block text-sm text-muted font-semibold mb-2">
+//                       Zone
+//                     </label>
+//                     <select
+//                       value={metadata.zone}
+//                       onChange={(e) =>
+//                         setMetadata({ ...metadata, zone: e.target.value })
+//                       }
+//                       className="w-full bg-primary border border-borderline text-content rounded-xl px-4 py-3 outline-none focus:border-accent transition-all"
+//                     >
+//                       <option>Urban</option>
+//                       <option>Rural</option>
+//                       <option>Highway</option>
+//                     </select>
+//                   </div>
+//                 </div>
+
+//                 <button
+//                   onClick={startProcessing}
+//                   className="w-full bg-accent text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-all"
+//                 >
+//                   <Gauge size={21} />
+//                   Initialize AI Analysis
+//                 </button>
+//               </div>
+//             </div>
+//           </div>
+//         )}
+
+//         {/* Step 3 Processing */}
+//         {step === 3 && (
+//           <div className="bg-secondary border border-borderline rounded-3xl p-8 md:p-14 text-center animate-fadeUp">
+//             <div className="relative max-w-md h-[260px] mx-auto bg-primary border border-borderline rounded-2xl overflow-hidden">
+//               <img
+//                 src={previewUrl}
+//                 alt="Processing"
+//                 className="w-full h-full object-cover opacity-50 grayscale"
+//               />
+//               <div className="absolute top-0 left-0 w-full h-1 bg-accent animate-scanLine" />
+//             </div>
+
+//             <h2 className="text-2xl font-bold mt-8">{processingText}</h2>
+//             <p className="text-muted mt-2">
+//               Hybrid Engine: YOLOv8 + Faster R-CNN active
+//             </p>
+//           </div>
+//         )}
+
+//         {/* Step 4 Results */}
+//         {step === 4 && results && (
+//           <div className="animate-fadeUp space-y-6">
+//             <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+//               <div>
+//                 <p className="text-accent text-sm font-semibold tracking-widest">
+//                   DETECTION REPORT
+//                 </p>
+//                 <h2 className="text-3xl font-bold mt-1">Analysis Complete</h2>
+//                 <p className="text-muted mt-1">
+//                   Road surface analysis completed successfully.
+//                 </p>
+//               </div>
+
+//               <button
+//                 onClick={exportToPDF}
+//                 disabled={isExporting}
+//                 className={`flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-semibold text-white ${
+//                   isExporting
+//                     ? "bg-slate-500 cursor-not-allowed"
+//                     : "bg-green-600 hover:bg-green-500"
+//                 }`}
+//               >
+//                 <Download size={18} />
+//                 {isExporting ? "Generating..." : "Download Report"}
+//               </button>
+//             </div>
+
+//             <div
+//               id="pdf-report-container"
+//               className="space-y-6 bg-primary text-content p-4 rounded-3xl"
+//             >
+//               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+//                 <CleanStat
+//                   title="Total Potholes"
+//                   value={results.total_potholes_detected}
+//                 />
+//                 <CleanStat
+//                   title="Severity"
+//                   value={
+//                     results.potholes?.length > 0
+//                       ? results.potholes[0].severity
+//                       : "None"
+//                   }
+//                 />
+//                 <CleanStat
+//                   title="Location"
+//                   value={
+//                     results.gps_location?.latitude ? "Available" : "Unavailable"
+//                   }
+//                 />
+//               </div>
+
+//               <div className="grid grid-cols-1 xl:grid-cols-[1.8fr_0.9fr] gap-6">
+//                 {/* Image with correct bbox alignment */}
+//                 <div className="bg-secondary border border-borderline rounded-3xl p-5">
+//                   <div className="flex items-center justify-between mb-4">
+//                     <h3 className="text-lg font-bold">Detected Image</h3>
+//                     <span className="text-xs text-muted bg-primary border border-borderline px-3 py-1 rounded-full">
+//                       AI Processed
+//                     </span>
+//                   </div>
+
+//                   <div className="relative w-full h-[620px] bg-black rounded-2xl overflow-hidden border border-borderline">
+//                     <img
+//                       src={previewUrl}
+//                       alt="Analyzed"
+//                       className="w-full h-full object-fill"
+//                     />
+
+//                     {results.potholes &&
+//                       results.potholes.map((p, i) => (
+//                         <div
+//                           key={i}
+//                           className={`absolute border-[3px] ${
+//                             p.severity === "High"
+//                               ? "border-red-500 bg-red-500/20"
+//                               : p.severity === "Medium"
+//                                 ? "border-amber-500 bg-amber-500/20"
+//                                 : "border-green-500 bg-green-500/20"
+//                           }`}
+//                           style={{
+//                             top: `${p.bbox.top}%`,
+//                             left: `${p.bbox.left}%`,
+//                             width: `${p.bbox.width}%`,
+//                             height: `${p.bbox.height}%`,
+//                           }}
+//                         >
+//                           <span
+//                             className={`text-white text-xs px-2 py-1 font-semibold inline-block ${
+//                               p.severity === "High"
+//                                 ? "bg-red-500"
+//                                 : p.severity === "Medium"
+//                                   ? "bg-amber-500"
+//                                   : "bg-green-500"
+//                             }`}
+//                           >
+//                             {Math.round(p.confidence * 100)}%
+//                           </span>
+//                         </div>
+//                       ))}
+//                   </div>
+//                 </div>
+
+//                 <div className="space-y-4">
+//                   <div className="bg-secondary border border-borderline rounded-3xl p-5">
+//                     <h3 className="text-lg font-bold mb-4">
+//                       Inspection Details
+//                     </h3>
+
+//                     <CleanRow label="Traffic" value={metadata.traffic} />
+//                     <CleanRow label="Zone" value={metadata.zone} />
+//                     <CleanRow
+//                       label="Camera Distance"
+//                       value={
+//                         metadata.distance ? `${metadata.distance} m` : "N/A"
+//                       }
+//                     />
+//                     <CleanRow
+//                       label="GPS"
+//                       value={
+//                         results.gps_location?.latitude
+//                           ? "Available"
+//                           : "Not found"
+//                       }
+//                     />
+//                   </div>
+
+//                   {results.potholes?.length > 0 && (
+//                     <div className="bg-secondary border border-borderline rounded-3xl p-5">
+//                       <h3 className="text-lg font-bold mb-4">
+//                         Repair Estimation
+//                       </h3>
+
+//                       <div className="space-y-4">
+//                         {results.potholes.map((p, index) => {
+//                           const mats = calculateMaterials(p.damage_percentage);
+
+//                           return (
+//                             <div
+//                               key={index}
+//                               className="bg-primary rounded-2xl border border-borderline p-4"
+//                             >
+//                               <div className="flex items-center justify-between mb-3">
+//                                 <h4 className="font-semibold">
+//                                   Pothole #{index + 1}
+//                                 </h4>
+//                                 <span
+//                                   className={`text-xs px-3 py-1 rounded-full font-semibold ${
+//                                     p.severity === "High"
+//                                       ? "bg-red-500/10 text-red-500"
+//                                       : p.severity === "Medium"
+//                                         ? "bg-amber-500/10 text-amber-500"
+//                                         : "bg-green-500/10 text-green-500"
+//                                   }`}
+//                                 >
+//                                   {p.severity}
+//                                 </span>
+//                               </div>
+
+//                               <CleanRow
+//                                 label="Depth"
+//                                 value={`${mats.depth} cm`}
+//                               />
+//                               <CleanRow
+//                                 label="Area"
+//                                 value={`${mats.area} m²`}
+//                               />
+//                               <CleanRow
+//                                 label="Bitumen"
+//                                 value={`${mats.bitumen} kg`}
+//                               />
+//                               <CleanRow
+//                                 label="Gravel"
+//                                 value={`${mats.gravel} kg`}
+//                               />
+
+//                               <div className="mt-3 pt-3 border-t border-borderline flex items-center justify-between">
+//                                 <span className="text-muted text-sm">
+//                                   Estimated Cost
+//                                 </span>
+//                                 <strong>{mats.cost}</strong>
+//                               </div>
+//                             </div>
+//                           );
+//                         })}
+//                       </div>
+//                     </div>
+//                   )}
+//                 </div>
+//               </div>
+
+//               <div className="bg-secondary border border-borderline rounded-3xl p-5">
+//                 <h3 className="text-lg font-bold mb-4">Location Mapping</h3>
+
+//                 {results.gps_location && results.gps_location.latitude ? (
+//                   <div className="h-[380px] w-full rounded-2xl overflow-hidden border border-borderline">
+//                     <MapContainer
+//                       center={[
+//                         parseFloat(results.gps_location.latitude),
+//                         parseFloat(results.gps_location.longitude),
+//                       ]}
+//                       zoom={15}
+//                       className="h-full w-full"
+//                     >
+//                       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+//                       <Marker
+//                         position={[
+//                           parseFloat(results.gps_location.latitude),
+//                           parseFloat(results.gps_location.longitude),
+//                         ]}
+//                       >
+//                         <Popup>Road damage detected</Popup>
+//                       </Marker>
+//                     </MapContainer>
+//                   </div>
+//                 ) : (
+//                   <div className="bg-primary border border-dashed border-borderline rounded-2xl p-10 text-center text-muted">
+//                     GPS data is unavailable for this image.
+//                   </div>
+//                 )}
+//               </div>
+//             </div>
+//           </div>
+//         )}
+//       </div>
+//     </div>
+//   );
+// }
+
+// function StepItem({ number, label, active }) {
+//   return (
+//     <div
+//       className={`rounded-2xl border p-4 text-center transition-all ${
+//         active
+//           ? "bg-secondary border-accent text-content"
+//           : "bg-secondary border-borderline text-muted"
+//       }`}
+//     >
+//       <div
+//         className={`w-8 h-8 mx-auto rounded-full flex items-center justify-center font-bold mb-2 ${
+//           active ? "bg-accent text-white" : "bg-primary text-muted"
+//         }`}
+//       >
+//         {active ? <CheckCircle2 size={18} /> : number}
+//       </div>
+//       <p className="text-xs md:text-sm font-semibold uppercase">{label}</p>
+//     </div>
+//   );
+// }
+
+// function CleanStat({ title, value }) {
+//   return (
+//     <div className="bg-secondary border border-borderline rounded-2xl p-5">
+//       <p className="text-muted text-sm font-semibold">{title}</p>
+//       <h3 className="text-2xl font-bold mt-2">{value}</h3>
+//     </div>
+//   );
+// }
+
+// function CleanRow({ label, value }) {
+//   return (
+//     <div className="flex items-center justify-between py-2 border-b border-borderline last:border-b-0">
+//       <span className="text-muted text-sm">{label}</span>
+//       <strong className="text-sm">{value}</strong>
+//     </div>
+//   );
+// }
+
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import {
+  UploadCloud,
+  MapPin,
+  ArrowLeft,
+  Download,
+  FileImage,
+  Gauge,
+  Camera,
+  CheckCircle2,
+} from "lucide-react";
+
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+
+import html2canvas from "html2canvas";
+import { jsPDF } from "jspdf";
+
+import L from "leaflet";
+import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
+import markerIcon from "leaflet/dist/images/marker-icon.png";
+import markerShadow from "leaflet/dist/images/marker-shadow.png";
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -23,45 +682,59 @@ L.Icon.Default.mergeOptions({
 
 export default function ImageFlow() {
   const navigate = useNavigate();
-  
-  // App State
+
   const [step, setStep] = useState(1);
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
-  
-  // Metadata Form State
-  const [metadata, setMetadata] = useState({ distance: '', traffic: 'Medium', zone: 'Urban', time: '' });
-  
-  // Processing & Results State
-  const [processingText, setProcessingText] = useState("Initializing AI Engine...");
+
+  const [metadata, setMetadata] = useState({
+    distance: "",
+    traffic: "Medium",
+    zone: "Urban",
+    time: "",
+  });
+
+  const [processingText, setProcessingText] = useState(
+    "Initializing AI Engine...",
+  );
+
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
+  const [isExporting, setIsExporting] = useState(false);
 
-  // Step 1: Handle File Drop/Select
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
+
     if (selectedFile) {
       setFile(selectedFile);
       setPreviewUrl(URL.createObjectURL(selectedFile));
-      
+      setError(null);
+
       let progress = 0;
       const interval = setInterval(() => {
         progress += 20;
         setUploadProgress(progress);
+
         if (progress >= 100) {
           clearInterval(interval);
-          setTimeout(() => setStep(2), 500); 
+          setTimeout(() => setStep(2), 500);
         }
       }, 150);
     }
   };
 
-  // Step 2: Submit Metadata & Start AI
   const startProcessing = async () => {
-    setStep(3); 
-    
-    const texts = ["Analyzing surface damage...", "Estimating pothole depth...", "Calculating material requirement...", "Extracting telemetry..."];
+    setStep(3);
+
+    const texts = [
+      "Analyzing surface damage...",
+      "Estimating pothole depth...",
+      "Calculating material requirement...",
+      "Extracting telemetry...",
+      "Saving report to admin dashboard...",
+    ];
+
     let i = 0;
     const textInterval = setInterval(() => {
       setProcessingText(texts[i % texts.length]);
@@ -72,23 +745,65 @@ export default function ImageFlow() {
     formData.append("file", file);
 
     try {
-      const response = await axios.post("http://localhost:8000/analyze", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      // 1. Analyze image using Python FastAPI backend
+      const response = await axios.post(
+        "http://localhost:8000/analyze",
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        },
+      );
+
+      const result = response.data;
+
+      if (result?.status === "error") {
+        throw new Error(result.message || "Analysis failed");
+      }
+
+      // 2. Auto-save result to separate Node admin backend
+      const saveData = new FormData();
+
+      saveData.append("file", file);
+      saveData.append("input_type", "image");
+      // saveData.append("file", videoFile);
+      // saveData.append("input_type", "video");
+      saveData.append("pothole_count", result.total_potholes_detected || 0);
+      saveData.append("severity", result.potholes?.[0]?.severity || "None");
+      saveData.append(
+        "damage_percentage",
+        result.potholes?.[0]?.damage_percentage || 0,
+      );
+      saveData.append("traffic", metadata.traffic);
+      saveData.append("zone", metadata.zone);
+      saveData.append("camera_distance", metadata.distance || "");
+      saveData.append("latitude", result.gps_location?.latitude || "");
+      saveData.append("longitude", result.gps_location?.longitude || "");
+      saveData.append("potholes", JSON.stringify(result.potholes || []));
+
+      try {
+        await axios.post("http://localhost:5000/api/reports", saveData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+
+        console.log("Report saved to admin dashboard successfully");
+      } catch (saveError) {
+        console.error("Admin report save failed:", saveError);
+      }
+
       clearInterval(textInterval);
-      setResults(response.data);
-      setStep(4); 
+      setResults(result);
+      setStep(4);
     } catch (err) {
       clearInterval(textInterval);
+      console.error(err);
       setError("Failed to connect to AI server. Ensure backend is running.");
       setStep(1);
     }
   };
 
-  // Helper: Material Estimation Math
   const calculateMaterials = (damagePct) => {
-    const estimatedAreaSqMeters = (damagePct / 100) * 9; 
-    const estimatedDepthCm = damagePct > 15 ? 12 : damagePct > 5 ? 7 : 4; 
+    const estimatedAreaSqMeters = (damagePct / 100) * 9;
+    const estimatedDepthCm = damagePct > 15 ? 12 : damagePct > 5 ? 7 : 4;
     const volume = estimatedAreaSqMeters * (estimatedDepthCm / 100);
     const totalWeightKg = volume * 2400;
 
@@ -97,315 +812,528 @@ export default function ImageFlow() {
       area: estimatedAreaSqMeters.toFixed(2),
       bitumen: (totalWeightKg * 0.05).toFixed(1),
       gravel: (totalWeightKg * 0.95).toFixed(1),
-      cost: "Rs. " + (totalWeightKg * 0.15 * 80).toFixed(2) 
+      cost: "Rs. " + (totalWeightKg * 0.15 * 80).toFixed(2),
     };
   };
 
-  // PDF Export State
-  const [isExporting, setIsExporting] = useState(false);
-
-  // The PDF Engine
-  // The Upgraded Enterprise PDF Engine
   const exportToPDF = async () => {
     setIsExporting(true);
+
+    const element = document.getElementById("pdf-report-container");
+
     try {
-      // 1. Target the UI container for the visual screenshot
-      const element = document.getElementById('pdf-report-container');
-      const canvas = await html2canvas(element, { 
-        scale: 2, 
-        useCORS: true, 
-        backgroundColor: '#09090b' 
+      element.classList.add("pdf-light-mode");
+
+      await new Promise((resolve) => setTimeout(resolve, 200));
+
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        scrollY: -window.scrollY,
       });
-      const imgData = canvas.toDataURL('image/png');
-      
-      // 2. Initialize A4 PDF
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      
-      // ==========================================
-      // NEW: FORMAL DOCUMENT HEADER & METADATA
-      // ==========================================
-      // Title
-      pdf.setFontSize(22);
-      pdf.setFont('helvetica', 'bold');
-      pdf.setTextColor(40, 40, 40); // Dark Gray
-      pdf.text("Structural Damage Assessment Report", 15, 20);
 
-      // Subheader & Date
-      pdf.setFontSize(11);
-      pdf.setFont('helvetica', 'normal');
-      pdf.setTextColor(100, 100, 100);
-      pdf.text(`Date of Inspection: ${new Date().toLocaleDateString()}`, 15, 28);
-      pdf.text(`Generated by: Next-Gen Hybrid AI System (YOLOv8 + Faster R-CNN)`, 15, 34);
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
 
-      // Raw Telemetry Data Section
-      pdf.setFontSize(14);
-      pdf.setFont('helvetica', 'bold');
-      pdf.setTextColor(0, 0, 0);
-      pdf.text("1. Site Telemetry & Metadata", 15, 48);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
 
-      pdf.setFontSize(11);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text(`• Traffic Density: ${metadata.traffic}`, 20, 56);
-      pdf.text(`• Zone Classification: ${metadata.zone}`, 20, 63);
-      pdf.text(`• Camera Distance: ${metadata.distance ? metadata.distance + ' meters' : 'N/A'}`, 20, 70);
-      
-      // Add GPS if available
-      if (results?.gps_location?.latitude) {
-        pdf.text(`• GPS Coordinates: ${results.gps_location.latitude}, ${results.gps_location.longitude}`, 20, 77);
-      } else {
-        pdf.text(`• GPS Coordinates: Data Stripped (Privacy Filter)`, 20, 77);
+      const imgWidth = pdfWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pdfHeight;
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pdfHeight;
       }
 
-      // Visual Analysis Section Header
-      pdf.setFontSize(14);
-      pdf.setFont('helvetica', 'bold');
-      pdf.text("2. Automated Visual Analysis & Material Estimation", 15, 92);
-
-      // ==========================================
-      // 3. ADD THE DASHBOARD SCREENSHOT
-      // ==========================================
-      // Calculate dimensions to fit nicely below the text (with 15mm margins)
-      const imgWidth = 180; 
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
-      // Place the image starting at Y = 98 (below our text)
-      pdf.addImage(imgData, 'PNG', 15, 98, imgWidth, imgHeight); 
-      
-      // 4. Trigger Download
-      pdf.save(`Infrastructure_Report_${new Date().toISOString().split('T')[0]}.pdf`);
-      
+      pdf.save(
+        `Infrastructure_Report_${new Date().toISOString().split("T")[0]}.pdf`,
+      );
     } catch (error) {
       console.error("PDF Export Error:", error);
-      alert("Failed to generate PDF. Check console for details.");
+      alert("Failed to generate PDF.");
+    } finally {
+      element.classList.remove("pdf-light-mode");
+      setIsExporting(false);
     }
-    setIsExporting(false);
   };
 
   return (
-    <div className="max-w-[1200px] mx-auto px-5 py-10 font-sans">
-      
-      {/* Header */}
-      <div className="flex items-center mb-8 relative">
-        <button 
-          onClick={() => navigate('/dashboard')} 
-          className="flex items-center bg-transparent border-none cursor-pointer text-muted font-medium hover:text-content transition-colors absolute left-0"
-        >
-          <ArrowLeft size={20} className="mr-2" /> Back
-        </button>
-        <h2 className="mx-auto text-content text-2xl font-bold">High-Resolution Image Analysis</h2>
-      </div>
+    <div className="min-h-screen bg-primary text-content px-6 py-10 transition-colors duration-300">
+      <div className="w-full max-w-[1500px] mx-auto px-4">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5 mb-8 animate-fadeUp">
+          <button
+            onClick={() => navigate("/dashboard")}
+            className="w-fit flex items-center gap-2 bg-secondary border border-borderline text-muted hover:text-content px-5 py-3 rounded-xl font-semibold transition-all"
+          >
+            <ArrowLeft size={20} />
+            Back
+          </button>
 
-      {error && (
-        <div className="bg-red-500/10 border border-red-500 text-red-500 p-4 rounded-lg mb-6 text-center font-medium">
-          {error}
+          <div className="text-center">
+            <p className="text-accent text-sm font-semibold tracking-widest">
+              IMAGE ANALYSIS MODULE
+            </p>
+            <h1 className="text-3xl md:text-4xl font-bold mt-1">
+              High-Resolution Image Analysis
+            </h1>
+          </div>
+
+          <div className="hidden md:flex items-center gap-2 bg-secondary border border-borderline px-5 py-3 rounded-xl">
+            <Camera size={20} className="text-accent" />
+            <span className="text-muted font-semibold text-sm">
+              AI Engine Active
+            </span>
+          </div>
         </div>
-      )}
 
-      {/* STEP 1: UPLOAD */}
-      {step === 1 && (
-        <div className="border-2 border-dashed border-borderline rounded-2xl py-16 px-5 text-center bg-secondary shadow-card transition-all hover:border-accent">
-          <UploadCloud size={60} className="text-muted mx-auto mb-5" />
-          <h3 className="text-xl font-bold text-content mb-2">Drag & Drop Road Image Here</h3>
-          <p className="text-muted mb-6">Supports JPG, PNG, WEBP (Max 10MB)</p>
-          
-          <input type="file" id="fileUpload" className="hidden" onChange={handleFileChange} accept="image/*" />
-          <label htmlFor="fileUpload" className="bg-accent text-white py-3 px-8 rounded-lg cursor-pointer font-bold hover:opacity-90 transition-opacity inline-block shadow-lg shadow-accent/30">
-            Browse Files
-          </label>
-          
-          {uploadProgress > 0 && (
-            <div className="mt-8 max-w-[400px] mx-auto">
-              <div className="flex justify-between text-sm text-muted mb-2 font-medium">
-                <span>Uploading...</span>
-                <span>{uploadProgress}%</span>
-              </div>
-              <div className="h-2 bg-primary rounded-full overflow-hidden border border-borderline">
-                <div className="h-full bg-accent transition-all duration-200" style={{ width: `${uploadProgress}%` }}></div>
+        {/* Step Progress */}
+        <div className="grid grid-cols-4 gap-3 mb-8 animate-fadeUp">
+          <StepItem number="1" label="Upload" active={step >= 1} />
+          <StepItem number="2" label="Metadata" active={step >= 2} />
+          <StepItem number="3" label="AI Scan" active={step >= 3} />
+          <StepItem number="4" label="Report" active={step >= 4} />
+        </div>
+
+        {error && (
+          <div className="mb-6 bg-red-500/10 border border-red-500/30 text-red-500 rounded-2xl p-4 text-center font-semibold">
+            {error}
+          </div>
+        )}
+
+        {/* Step 1 Upload */}
+        {step === 1 && (
+          <div className="bg-secondary border border-borderline rounded-3xl p-8 md:p-14 text-center animate-fadeUp">
+            <div className="w-20 h-20 rounded-2xl bg-primary border border-borderline mx-auto flex items-center justify-center text-accent mb-6">
+              <UploadCloud size={42} />
+            </div>
+
+            <h2 className="text-2xl md:text-3xl font-bold mb-3">
+              Upload Road Image
+            </h2>
+
+            <p className="text-muted text-lg mb-8">
+              Drag and drop or browse road image for pothole detection.
+            </p>
+
+            <div className="max-w-xl mx-auto border-2 border-dashed border-borderline rounded-2xl p-8 bg-primary">
+              <input
+                type="file"
+                id="fileUpload"
+                className="hidden"
+                onChange={handleFileChange}
+                accept="image/*"
+              />
+
+              <label
+                htmlFor="fileUpload"
+                className="inline-flex items-center gap-3 bg-accent text-white px-7 py-4 rounded-xl font-semibold cursor-pointer hover:opacity-90 transition-all"
+              >
+                <FileImage size={22} />
+                Browse Image
+              </label>
+
+              <p className="text-muted text-sm mt-4">
+                Supports JPG, PNG, WEBP. Max size 10MB.
+              </p>
+
+              {uploadProgress > 0 && (
+                <div className="mt-8">
+                  <div className="flex justify-between text-sm text-muted mb-2">
+                    <span>Uploading...</span>
+                    <span>{uploadProgress}%</span>
+                  </div>
+
+                  <div className="h-3 bg-secondary border border-borderline rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-accent rounded-full transition-all duration-300"
+                      style={{ width: `${uploadProgress}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Step 2 Metadata */}
+        {step === 2 && (
+          <div className="grid md:grid-cols-2 gap-8 bg-secondary border border-borderline rounded-3xl p-6 md:p-8 animate-fadeUp">
+            <div className="bg-primary border border-borderline rounded-2xl p-3">
+              <img
+                src={previewUrl}
+                alt="Preview"
+                className="w-full max-h-[430px] object-cover rounded-xl"
+              />
+            </div>
+
+            <div>
+              <p className="text-accent text-sm font-semibold tracking-widest mb-2">
+                SITE DETAILS
+              </p>
+
+              <h2 className="text-2xl font-bold flex items-center gap-2 mb-6">
+                <MapPin size={24} className="text-accent" />
+                Telemetry Data
+              </h2>
+
+              <div className="space-y-5">
+                <div>
+                  <label className="block text-sm text-muted font-semibold mb-2">
+                    Camera Distance to Damage (meters)
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="e.g. 5"
+                    value={metadata.distance}
+                    onChange={(e) =>
+                      setMetadata({ ...metadata, distance: e.target.value })
+                    }
+                    className="w-full bg-primary border border-borderline text-content rounded-xl px-4 py-3 outline-none focus:border-accent transition-all"
+                  />
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm text-muted font-semibold mb-2">
+                      Traffic Density
+                    </label>
+                    <select
+                      value={metadata.traffic}
+                      onChange={(e) =>
+                        setMetadata({ ...metadata, traffic: e.target.value })
+                      }
+                      className="w-full bg-primary border border-borderline text-content rounded-xl px-4 py-3 outline-none focus:border-accent transition-all"
+                    >
+                      <option>Low</option>
+                      <option>Medium</option>
+                      <option>High</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm text-muted font-semibold mb-2">
+                      Zone
+                    </label>
+                    <select
+                      value={metadata.zone}
+                      onChange={(e) =>
+                        setMetadata({ ...metadata, zone: e.target.value })
+                      }
+                      className="w-full bg-primary border border-borderline text-content rounded-xl px-4 py-3 outline-none focus:border-accent transition-all"
+                    >
+                      <option>Urban</option>
+                      <option>Rural</option>
+                      <option>Highway</option>
+                    </select>
+                  </div>
+                </div>
+
+                <button
+                  onClick={startProcessing}
+                  className="w-full bg-accent text-white py-4 rounded-xl font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-all"
+                >
+                  <Gauge size={21} />
+                  Initialize AI Analysis
+                </button>
               </div>
             </div>
-          )}
-        </div>
-      )}
-
-      {/* STEP 2: METADATA FORM */}
-      {step === 2 && (
-        <div className="flex flex-col md:flex-row gap-8 bg-secondary p-8 rounded-2xl shadow-card border border-borderline">
-          <div className="flex-1">
-            <img src={previewUrl} alt="Preview" className="w-full h-auto max-h-[400px] rounded-xl object-cover border border-borderline shadow-sm" />
           </div>
-          <div className="flex-1">
-            <h3 className="mb-6 flex items-center gap-3 text-xl font-bold text-content">
-              <MapPin size={24} className="text-accent"/> Telemetry Data
-            </h3>
-            <div className="flex flex-col gap-5">
+        )}
+
+        {/* Step 3 Processing */}
+        {step === 3 && (
+          <div className="bg-secondary border border-borderline rounded-3xl p-8 md:p-14 text-center animate-fadeUp">
+            <div className="relative max-w-md h-[260px] mx-auto bg-primary border border-borderline rounded-2xl overflow-hidden">
+              <img
+                src={previewUrl}
+                alt="Processing"
+                className="w-full h-full object-cover opacity-50 grayscale"
+              />
+              <div className="absolute top-0 left-0 w-full h-1 bg-accent animate-scanLine" />
+            </div>
+
+            <h2 className="text-2xl font-bold mt-8">{processingText}</h2>
+            <p className="text-muted mt-2">
+              Hybrid Engine: YOLOv8 + Faster R-CNN active
+            </p>
+          </div>
+        )}
+
+        {/* Step 4 Results */}
+        {step === 4 && results && (
+          <div className="animate-fadeUp space-y-6">
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
               <div>
-                <label className="block text-sm text-muted mb-2 font-medium">Camera Distance to Damage (meters)</label>
-                <input type="number" required placeholder="e.g. 5" value={metadata.distance} onChange={(e) => setMetadata({...metadata, distance: e.target.value})} className="w-full p-3 rounded-lg border border-borderline bg-primary text-content focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all" />
+                <p className="text-accent text-sm font-semibold tracking-widest">
+                  DETECTION REPORT
+                </p>
+                <h2 className="text-3xl font-bold mt-1">Analysis Complete</h2>
+                <p className="text-muted mt-1">
+                  Road surface analysis completed successfully.
+                </p>
               </div>
-              <div className="flex gap-4">
-                <div className="flex-1">
-                  <label className="block text-sm text-muted mb-2 font-medium">Traffic Density</label>
-                  <select value={metadata.traffic} onChange={(e) => setMetadata({...metadata, traffic: e.target.value})} className="w-full p-3 rounded-lg border border-borderline bg-primary text-content focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all">
-                    <option>Low</option><option>Medium</option><option>High</option>
-                  </select>
-                </div>
-                <div className="flex-1">
-                  <label className="block text-sm text-muted mb-2 font-medium">Zone</label>
-                  <select value={metadata.zone} onChange={(e) => setMetadata({...metadata, zone: e.target.value})} className="w-full p-3 rounded-lg border border-borderline bg-primary text-content focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all">
-                    <option>Urban</option><option>Rural</option><option>Highway</option>
-                  </select>
-                </div>
-              </div>
-              <button onClick={startProcessing} className="mt-4 bg-accent text-white py-4 px-6 rounded-lg font-bold text-base hover:opacity-90 transition-opacity shadow-lg shadow-accent/30 w-full">
-                Initialize AI Analysis
+
+              <button
+                onClick={exportToPDF}
+                disabled={isExporting}
+                className={`flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-semibold text-white ${
+                  isExporting
+                    ? "bg-slate-500 cursor-not-allowed"
+                    : "bg-green-600 hover:bg-green-500"
+                }`}
+              >
+                <Download size={18} />
+                {isExporting ? "Generating..." : "Download Report"}
               </button>
             </div>
-          </div>
-        </div>
-      )}
 
-      {/* STEP 3: PROCESSING */}
-      {step === 3 && (
-        <div className="text-center py-20 px-5">
-          <div className="relative w-[300px] h-[200px] mx-auto overflow-hidden rounded-xl border-2 border-borderline shadow-card">
-            <img src={previewUrl} alt="Processing" className="w-full h-full object-cover opacity-50 grayscale" />
-            <div className="absolute left-0 w-full h-1 bg-accent shadow-[0_0_15px_var(--accent)] animate-[scanLine_2s_infinite_linear]"></div>
-          </div>
-          <h3 className="mt-8 text-xl font-bold text-content">{processingText}</h3>
-          <p className="text-muted mt-2 font-medium">Hybrid Engine: YOLOv8 + Faster R-CNN active</p>
-        </div>
-      )}
-
-      {/* STEP 4: RESULTS DASHBOARD */}
-      {step === 4 && results && (
-        <div className="animate-fade-up">
-
-          {/* NEW: Export Header & Button */}
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-black text-content">Analysis Complete</h2>
-            <button 
-              onClick={exportToPDF}
-              disabled={isExporting}
-              className={`flex items-center gap-2 px-6 py-3 rounded-lg font-bold text-white transition-all shadow-lg 
-                ${isExporting ? 'bg-slate-600 cursor-not-allowed' : 'bg-green-600 hover:bg-green-500 shadow-green-500/30 hover:-translate-y-1'}
-              `}
+            <div
+              id="pdf-report-container"
+              className="space-y-6 bg-primary text-content p-4 rounded-3xl"
             >
-              <Download size={20} />
-              {isExporting ? 'Generating PDF...' : 'Export Official Report'}
-            </button>
-          </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <CleanStat
+                  title="Total Potholes"
+                  value={results.total_potholes_detected}
+                />
+                <CleanStat
+                  title="Severity"
+                  value={
+                    results.potholes?.length > 0
+                      ? results.potholes[0].severity
+                      : "None"
+                  }
+                />
+                <CleanStat
+                  title="Location"
+                  value={
+                    results.gps_location?.latitude ? "Available" : "Unavailable"
+                  }
+                />
+              </div>
 
-          {/* CRITICAL: Added the ID here so html2canvas knows what to screenshot */}
-          <div id="pdf-report-container" className="p-4 -mx-4 bg-primary rounded-xl">
-          
-            <div className="flex flex-wrap lg:flex-nowrap gap-8 mb-8">
-              {/* Left: Annotated Image */}
-              <div className="flex-[1_1_500px] bg-secondary p-6 rounded-2xl shadow-card border border-borderline">
-                <h3 className="mb-5 flex items-center gap-3 text-lg font-bold text-content">
-                  <Activity size={22} className="text-accent"/> Vision Detection
-                </h3>
-                <div className="relative inline-block w-full border border-borderline rounded-xl overflow-hidden">
-                  <img src={previewUrl} alt="Analyzed" className="w-full block" />
-                  
-                  {/* Draw Bounding Boxes using API coordinates */}
-                  {results.potholes && results.potholes.map((p, i) => (
-                    <div key={i} 
-                      className={`absolute border-[3px] flex items-start justify-start ${p.severity === 'High' ? 'border-red-500 bg-red-500/20' : p.severity === 'Medium' ? 'border-amber-500 bg-amber-500/20' : 'border-green-500 bg-green-500/20'}`} 
-                      style={{ 
-                        top: `${p.bbox.top}%`, 
-                        left: `${p.bbox.left}%`, 
-                        width: `${p.bbox.width}%`, 
-                        height: `${p.bbox.height}%` 
-                      }}
-                    >
-                      <span className={`text-white text-[10px] px-2 py-1 font-bold ${p.severity === 'High' ? 'bg-red-500' : p.severity === 'Medium' ? 'bg-amber-500' : 'bg-green-500'}`}>
-                        Pothole {Math.round(p.confidence * 100)}%
-                      </span>
+              <div className="grid grid-cols-1 xl:grid-cols-[1.8fr_0.9fr] gap-6">
+                <div className="bg-secondary border border-borderline rounded-3xl p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-bold">Detected Image</h3>
+                    <span className="text-xs text-muted bg-primary border border-borderline px-3 py-1 rounded-full">
+                      AI Processed
+                    </span>
+                  </div>
+
+                  <div className="relative w-full h-[620px] bg-black rounded-2xl overflow-hidden border border-borderline">
+                    <img
+                      src={previewUrl}
+                      alt="Analyzed"
+                      className="w-full h-full object-fill"
+                    />
+
+                    {results.potholes &&
+                      results.potholes.map((p, i) => (
+                        <div
+                          key={i}
+                          className={`absolute border-[3px] ${
+                            p.severity === "High"
+                              ? "border-red-500 bg-red-500/20"
+                              : p.severity === "Medium"
+                                ? "border-amber-500 bg-amber-500/20"
+                                : "border-green-500 bg-green-500/20"
+                          }`}
+                          style={{
+                            top: `${p.bbox.top}%`,
+                            left: `${p.bbox.left}%`,
+                            width: `${p.bbox.width}%`,
+                            height: `${p.bbox.height}%`,
+                          }}
+                        >
+                          <span
+                            className={`text-white text-xs px-2 py-1 font-semibold inline-block ${
+                              p.severity === "High"
+                                ? "bg-red-500"
+                                : p.severity === "Medium"
+                                  ? "bg-amber-500"
+                                  : "bg-green-500"
+                            }`}
+                          >
+                            {Math.round(p.confidence * 100)}%
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="bg-secondary border border-borderline rounded-3xl p-5">
+                    <h3 className="text-lg font-bold mb-4">
+                      Inspection Details
+                    </h3>
+
+                    <CleanRow label="Traffic" value={metadata.traffic} />
+                    <CleanRow label="Zone" value={metadata.zone} />
+                    <CleanRow
+                      label="Camera Distance"
+                      value={
+                        metadata.distance ? `${metadata.distance} m` : "N/A"
+                      }
+                    />
+                    <CleanRow
+                      label="GPS"
+                      value={
+                        results.gps_location?.latitude
+                          ? "Available"
+                          : "Not found"
+                      }
+                    />
+                  </div>
+
+                  {results.potholes?.length > 0 && (
+                    <div className="bg-secondary border border-borderline rounded-3xl p-5">
+                      <h3 className="text-lg font-bold mb-4">
+                        Repair Estimation
+                      </h3>
+
+                      <div className="space-y-4">
+                        {results.potholes.map((p, index) => {
+                          const mats = calculateMaterials(p.damage_percentage);
+
+                          return (
+                            <div
+                              key={index}
+                              className="bg-primary rounded-2xl border border-borderline p-4"
+                            >
+                              <div className="flex items-center justify-between mb-3">
+                                <h4 className="font-semibold">
+                                  Pothole #{index + 1}
+                                </h4>
+                                <span
+                                  className={`text-xs px-3 py-1 rounded-full font-semibold ${
+                                    p.severity === "High"
+                                      ? "bg-red-500/10 text-red-500"
+                                      : p.severity === "Medium"
+                                        ? "bg-amber-500/10 text-amber-500"
+                                        : "bg-green-500/10 text-green-500"
+                                  }`}
+                                >
+                                  {p.severity}
+                                </span>
+                              </div>
+
+                              <CleanRow
+                                label="Depth"
+                                value={`${mats.depth} cm`}
+                              />
+                              <CleanRow
+                                label="Area"
+                                value={`${mats.area} m²`}
+                              />
+                              <CleanRow
+                                label="Bitumen"
+                                value={`${mats.bitumen} kg`}
+                              />
+                              <CleanRow
+                                label="Gravel"
+                                value={`${mats.gravel} kg`}
+                              />
+
+                              <div className="mt-3 pt-3 border-t border-borderline flex items-center justify-between">
+                                <span className="text-muted text-sm">
+                                  Estimated Cost
+                                </span>
+                                <strong>{mats.cost}</strong>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
 
-              {/* Right: Analytics */}
-              <div className="flex-[1_1_400px] flex flex-col gap-6">
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <StatCard icon={<AlertTriangle size={24} className="text-red-500"/>} title="Total Detected" value={results.total_potholes_detected} />
-                  <StatCard icon={<Activity size={24} className="text-blue-500"/>} title="Severity Score" value={results.potholes?.length > 0 ? results.potholes[0].severity : "None"} />
-                </div>
+              <div className="bg-secondary border border-borderline rounded-3xl p-5">
+                <h3 className="text-lg font-bold mb-4">Location Mapping</h3>
 
-                {/* Material Panel */}
-                {results.potholes.length > 0 && (
-                  <div className="bg-slate-900 text-slate-100 p-6 rounded-2xl shadow-xl border border-slate-800">
-                    <h3 className="mb-5 flex items-center gap-3 text-slate-300 font-bold text-lg">
-                      <Truck size={22} className="text-accent"/> Material Estimation
-                    </h3>
-                    
-                    {results.potholes.map((p, index) => {
-                      const mats = calculateMaterials(p.damage_percentage);
-                      return (
-                        <div key={index} className="mb-4 last:mb-0 border-b border-slate-800 last:border-0 pb-4 last:pb-0">
-                          <div className="flex justify-between mb-3 text-sm">
-                            <span className="text-slate-400">Est. Depth:</span> <strong className="text-white">{mats.depth} cm</strong>
-                          </div>
-                          <div className="flex justify-between mb-3 text-sm">
-                            <span className="text-slate-400">Damaged Area:</span> <strong className="text-white">{mats.area} m²</strong>
-                          </div>
-                          <div className="grid grid-cols-2 gap-3 mt-4">
-                            <div className="bg-slate-950 p-3 rounded-lg text-center border border-slate-800">
-                              <div className="text-xs text-slate-400 mb-1">Bitumen Required</div>
-                              <div className="font-bold text-accent">{mats.bitumen} kg</div>
-                            </div>
-                            <div className="bg-slate-950 p-3 rounded-lg text-center border border-slate-800">
-                              <div className="text-xs text-slate-400 mb-1">Est. Repair Cost</div>
-                              <div className="font-bold text-green-400">{mats.cost}</div>
-                            </div>
-                          </div>
-                        </div>
-                      )
-                    })}
+                {results.gps_location && results.gps_location.latitude ? (
+                  <div className="h-[380px] w-full rounded-2xl overflow-hidden border border-borderline">
+                    <MapContainer
+                      center={[
+                        parseFloat(results.gps_location.latitude),
+                        parseFloat(results.gps_location.longitude),
+                      ]}
+                      zoom={15}
+                      className="h-full w-full"
+                    >
+                      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                      <Marker
+                        position={[
+                          parseFloat(results.gps_location.latitude),
+                          parseFloat(results.gps_location.longitude),
+                        ]}
+                      >
+                        <Popup>Road damage detected</Popup>
+                      </Marker>
+                    </MapContainer>
+                  </div>
+                ) : (
+                  <div className="bg-primary border border-dashed border-borderline rounded-2xl p-10 text-center text-muted">
+                    GPS data is unavailable for this image.
                   </div>
                 )}
               </div>
             </div>
-
-            {/* Bottom Row: Map */}
-            <div className="bg-secondary p-6 rounded-2xl shadow-card border border-borderline mb-10">
-              <h3 className="mb-5 flex items-center gap-3 text-lg font-bold text-content">
-                <MapPin size={22} className="text-accent"/> Geolocated Infrastructure Tag
-              </h3>
-              {results.gps_location && results.gps_location.latitude ? (
-                <div className="h-[350px] w-full rounded-xl overflow-hidden border border-borderline shadow-inner">
-                  <MapContainer center={[parseFloat(results.gps_location.latitude), parseFloat(results.gps_location.longitude)]} zoom={15} className="h-full w-full">
-                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                    <Marker position={[parseFloat(results.gps_location.latitude), parseFloat(results.gps_location.longitude)]}>
-                      <Popup>Critical Surface Damage Detected</Popup>
-                    </Marker>
-                  </MapContainer>
-                </div>
-              ) : (
-                <div className="p-10 bg-primary text-center text-muted rounded-xl border border-dashed border-borderline font-medium">
-                  EXIF GPS data stripped from image. Map mapping unavailable.
-                </div>
-              )}
-            </div>
-
-          </div> {/* <-- THIS IS THE MISSING CLOSING TAG THAT BROKE YOUR APP! */}
-
-        </div>
-      )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-function StatCard({ icon, title, value }) {
+function StepItem({ number, label, active }) {
   return (
-    <div className="bg-secondary p-5 rounded-2xl shadow-card border border-borderline flex flex-col justify-center">
-      <div className="flex items-center gap-3 mb-3">
-        {icon}
-        <span className="text-muted text-sm font-bold uppercase tracking-wider">{title}</span>
+    <div
+      className={`rounded-2xl border p-4 text-center transition-all ${
+        active
+          ? "bg-secondary border-accent text-content"
+          : "bg-secondary border-borderline text-muted"
+      }`}
+    >
+      <div
+        className={`w-8 h-8 mx-auto rounded-full flex items-center justify-center font-bold mb-2 ${
+          active ? "bg-accent text-white" : "bg-primary text-muted"
+        }`}
+      >
+        {active ? <CheckCircle2 size={18} /> : number}
       </div>
-      <div className="text-3xl font-black text-content">{value}</div>
+      <p className="text-xs md:text-sm font-semibold uppercase">{label}</p>
+    </div>
+  );
+}
+
+function CleanStat({ title, value }) {
+  return (
+    <div className="bg-secondary border border-borderline rounded-2xl p-5">
+      <p className="text-muted text-sm font-semibold">{title}</p>
+      <h3 className="text-2xl font-bold mt-2">{value}</h3>
+    </div>
+  );
+}
+
+function CleanRow({ label, value }) {
+  return (
+    <div className="flex items-center justify-between py-2 border-b border-borderline last:border-b-0">
+      <span className="text-muted text-sm">{label}</span>
+      <strong className="text-sm">{value}</strong>
     </div>
   );
 }
