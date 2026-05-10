@@ -30,11 +30,20 @@ export default function AdminDashboard() {
   const fetchReports = async () => {
     try {
       setLoading(true);
+
       const res = await adminApi.get("/reports");
-      setReports(res.data || []);
+
+      console.log("API Response:", res.data);
+
+      const reportsData = Array.isArray(res.data)
+        ? res.data
+        : res.data?.reports || [];
+
+      setReports(reportsData);
     } catch (error) {
       console.error(error);
       alert("Failed to fetch reports");
+      setReports([]);
     } finally {
       setLoading(false);
     }
@@ -71,13 +80,18 @@ export default function AdminDashboard() {
       ["Longitude", report.longitude || "N/A"],
       ["GPS Link", gpsLink],
       ["File URL", report.file_url || report.image_url || "N/A"],
-      ["Created At", report.createdAt ? new Date(report.createdAt).toLocaleString() : "N/A"],
+      [
+        "Created At",
+        report.createdAt ? new Date(report.createdAt).toLocaleString() : "N/A",
+      ],
     ];
 
     const csv =
       "Field,Value\n" +
       rows
-        .map(([key, value]) => `"${key}","${String(value).replace(/"/g, '""')}"`)
+        .map(
+          ([key, value]) => `"${key}","${String(value).replace(/"/g, '""')}"`,
+        )
         .join("\n");
 
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
@@ -95,17 +109,30 @@ export default function AdminDashboard() {
     fetchReports();
   }, []);
 
-  const filteredReports = reports.filter((r) =>
-    `${r.severity} ${r.zone} ${r.traffic} ${r.file_type || r.input_type}`
-      .toLowerCase()
-      .includes(search.toLowerCase())
-  );
+  const filteredReports = Array.isArray(reports)
+    ? reports.filter((r) =>
+        `${r.severity} ${r.zone} ${r.traffic} ${r.file_type || r.input_type}`
+          .toLowerCase()
+          .includes(search.toLowerCase()),
+      )
+    : [];
 
-  const totalReports = reports.length;
-  const highSeverity = reports.filter((r) => r.severity === "High").length;
-  const mediumSeverity = reports.filter((r) => r.severity === "Medium").length;
-  const lowSeverity = reports.filter((r) => r.severity === "Low").length;
-  const gpsAvailable = reports.filter((r) => r.latitude && r.longitude).length;
+  const totalReports = Array.isArray(reports) ? reports.length : 0;
+  const highSeverity = Array.isArray(reports)
+    ? reports.filter((r) => r.severity === "High").length
+    : 0;
+
+  const mediumSeverity = Array.isArray(reports)
+    ? reports.filter((r) => r.severity === "Medium").length
+    : 0;
+
+  const lowSeverity = Array.isArray(reports)
+    ? reports.filter((r) => r.severity === "Low").length
+    : 0;
+
+  const gpsAvailable = Array.isArray(reports)
+    ? reports.filter((r) => r.latitude && r.longitude).length
+    : 0;
 
   return (
     <div className="min-h-screen bg-primary text-content px-6 py-8">
@@ -136,11 +163,31 @@ export default function AdminDashboard() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-5 gap-5 mb-8">
-          <StatCard icon={<FileText />} title="Total Reports" value={totalReports} />
-          <StatCard icon={<AlertTriangle />} title="High Severity" value={highSeverity} />
-          <StatCard icon={<Activity />} title="Medium Severity" value={mediumSeverity} />
-          <StatCard icon={<Activity />} title="Low Severity" value={lowSeverity} />
-          <StatCard icon={<MapPin />} title="GPS Available" value={gpsAvailable} />
+          <StatCard
+            icon={<FileText />}
+            title="Total Reports"
+            value={totalReports}
+          />
+          <StatCard
+            icon={<AlertTriangle />}
+            title="High Severity"
+            value={highSeverity}
+          />
+          <StatCard
+            icon={<Activity />}
+            title="Medium Severity"
+            value={mediumSeverity}
+          />
+          <StatCard
+            icon={<Activity />}
+            title="Low Severity"
+            value={lowSeverity}
+          />
+          <StatCard
+            icon={<MapPin />}
+            title="GPS Available"
+            value={gpsAvailable}
+          />
         </div>
 
         <div className="bg-secondary border border-borderline rounded-3xl p-5 mb-6">
@@ -165,7 +212,9 @@ export default function AdminDashboard() {
           </div>
 
           {loading ? (
-            <div className="p-10 text-center text-muted">Loading reports...</div>
+            <div className="p-10 text-center text-muted">
+              Loading reports...
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left">
@@ -187,7 +236,8 @@ export default function AdminDashboard() {
                 <tbody>
                   {filteredReports.map((report) => {
                     const fileUrl = report.file_url || report.image_url;
-                    const fileType = report.file_type || report.input_type || "image";
+                    const fileType =
+                      report.file_type || report.input_type || "image";
 
                     return (
                       <tr
@@ -232,7 +282,9 @@ export default function AdminDashboard() {
                           <SeverityBadge severity={report.severity} />
                         </td>
 
-                        <td className="p-4">{report.damage_percentage ?? 0}%</td>
+                        <td className="p-4">
+                          {report.damage_percentage ?? 0}%
+                        </td>
                         <td className="p-4">{report.zone || "N/A"}</td>
                         <td className="p-4">{report.traffic || "N/A"}</td>
 

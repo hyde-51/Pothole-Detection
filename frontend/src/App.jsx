@@ -6,6 +6,7 @@ import { Sun, Moon } from "lucide-react";
 import LandingPage from "./pages/LandingPage";
 import MainDashboard from "./pages/MainDashboard";
 import ImageFlow from "./pages/ImageFlow";
+import VideoFlow from "./pages/VideoFlow";
 
 // Admin Pages (separate folder)
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -44,6 +45,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/dashboard" element={<MainDashboard />} />
         <Route path="/upload/image" element={<ImageFlow />} />
+        <Route path="/upload/video" element={<VideoFlow />} />
 
         {/* ADMIN SIDE (SEPARATE) */}
         <Route path="/admin" element={<AdminDashboard />} />

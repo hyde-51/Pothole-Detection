@@ -49,18 +49,18 @@ export default function MainDashboard() {
           />
 
           <ModeCard
-            icon={<Video size={48} className="text-muted" />}
+            icon={<Video size={48} className="text-accent" />}
             title="Upload Video"
-            desc="Frame-by-frame stretch analysis. Generates total damage length and heatmap."
-            active={false}
-            badge="Coming Soon"
+            desc="Frame-by-frame pothole detection using YOLO with annotated video output."
+            onClick={() => navigate("/upload/video")}
+            active={true}
           />
 
           <ModeCard
             icon={<Radio size={48} className="text-red-500" />}
             title="Live Detection"
             desc="Connect edge device or mobile camera for real-time inference and telemetry."
-            active={false}
+            active={true}
             badge="Coming Soon"
           />
         </div>
@@ -69,7 +69,7 @@ export default function MainDashboard() {
           <div className="grid md:grid-cols-4 gap-5">
             <StatCard title="AI Engine" value="Hybrid" />
             <StatCard title="Image Flow" value="Active" />
-            <StatCard title="Video Flow" value="Soon" />
+            <StatCard title="Video Flow" value="Active" />
             <StatCard title="Live Flow" value="Soon" />
           </div>
         </div>
