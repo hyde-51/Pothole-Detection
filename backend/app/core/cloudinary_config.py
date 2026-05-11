@@ -11,5 +11,3 @@ cloudinary.config(
     secure=True,
 )
 
-print("Cloudinary cloud:", os.getenv("CLOUDINARY_CLOUD_NAME"))
-print("Cloudinary api key exists:", bool(os.getenv("CLOUDINARY_API_KEY")))

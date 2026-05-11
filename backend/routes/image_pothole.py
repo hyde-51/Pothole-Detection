@@ -117,6 +117,7 @@ def upload_bytes_to_cloudinary(image_bytes: bytes, folder: str) -> Dict[str, Any
             "upload_success": True,
             "error": None,
         }
+
     except Exception as e:
         print("Cloudinary upload error:", e)
         return {
@@ -126,6 +127,7 @@ def upload_bytes_to_cloudinary(image_bytes: bytes, folder: str) -> Dict[str, Any
             "upload_success": False,
             "error": str(e),
         }
+
     finally:
         try:
             os.remove(temp_path)
@@ -157,7 +159,13 @@ def run_yolo(image: Image.Image) -> Dict[str, Any]:
     height, width = image_np.shape[:2]
     image_area = float(width * height)
 
-    results = yolo_model.predict(source=image_np, conf=YOLO_CONF, verbose=False)
+    results = yolo_model.predict(
+        source=image_np,
+        conf=YOLO_CONF,
+        imgsz=640,
+        verbose=False,
+    )
+
     r = results[0]
 
     detections: List[Dict[str, Any]] = []
@@ -236,29 +244,30 @@ def empty_yolo_result():
 
 def analyze_pothole_image(image_bytes: bytes) -> Dict[str, Any]:
     image = Image.open(BytesIO(image_bytes)).convert("RGB")
-
     gps_location = extract_gps_from_image(image_bytes)
 
-    original_upload = upload_bytes_to_cloudinary(
-        image_bytes,
-        folder="pothole_ai/original_images",
-    )
-
-    print("[1] CNN started")
+    
     cnn_result = run_cnn(image)
-    print("[1] CNN finished:", cnn_result)
+
+    
 
     if not cnn_result["is_pothole"]:
-        print("[2] CNN says normal road. YOLO skipped.")
-        yolo_result = empty_yolo_result()
+      
+
+        original_upload = upload_bytes_to_cloudinary(
+            image_bytes,
+            folder="pothole_ai/original_images",
+        )
+
+    
 
         return {
             "cnn": cnn_result,
             "yolo": {
-                "total_potholes": yolo_result["total_potholes"],
-                "total_pothole_area": yolo_result["total_pothole_area"],
-                "road_damage_percent": yolo_result["road_damage_percent"],
-                "detections": yolo_result["detections"],
+                "total_potholes": 0,
+                "total_pothole_area": 0,
+                "road_damage_percent": 0,
+                "detections": [],
             },
             "gps_location": gps_location,
             "final_verdict": "normal_road",
@@ -268,9 +277,11 @@ def analyze_pothole_image(image_bytes: bytes) -> Dict[str, Any]:
             "annotated_image": None,
         }
 
-    print("[2] CNN says pothole. YOLO started.")
+
+
     yolo_result = run_yolo(image)
-    print("[2] YOLO finished.")
+
+
 
     final_verdict = (
         "pothole_detected"
@@ -278,11 +289,9 @@ def analyze_pothole_image(image_bytes: bytes) -> Dict[str, Any]:
         else "cnn_positive_yolo_zero_boxes"
     )
 
-    image_to_store = (
-        yolo_result["annotated_image"]
-        if yolo_result["annotated_image"] and yolo_result["annotated_image"].get("cloudinary_url")
-        else original_upload
-    )
+    annotated_upload = yolo_result["annotated_image"]
+
+
 
     return {
         "cnn": cnn_result,
@@ -294,10 +303,10 @@ def analyze_pothole_image(image_bytes: bytes) -> Dict[str, Any]:
         },
         "gps_location": gps_location,
         "final_verdict": final_verdict,
-        "stored_image_type": "annotated" if image_to_store == yolo_result["annotated_image"] else "original",
-        "image_to_store": image_to_store,
-        "original_image": original_upload,
-        "annotated_image": yolo_result["annotated_image"],
+        "stored_image_type": "annotated",
+        "image_to_store": annotated_upload,
+        "original_image": None,
+        "annotated_image": annotated_upload,
     }
 
 

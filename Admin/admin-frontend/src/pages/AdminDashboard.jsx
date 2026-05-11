@@ -70,7 +70,12 @@ export default function AdminDashboard() {
     const rows = [
       ["Report ID", report._id],
       ["File Type", report.file_type || report.input_type || "image"],
-      ["Potholes", report.pothole_count ?? 0],
+      [
+        report.input_type === "video" ? "Frames With Potholes" : "Potholes",
+        report.input_type === "video"
+          ? (report.frames_with_potholes ?? 0)
+          : (report.pothole_count ?? 0),
+      ],
       ["Severity", report.severity || "None"],
       ["Damage Percentage", `${report.damage_percentage ?? 0}%`],
       ["Zone", report.zone || "N/A"],
@@ -79,7 +84,12 @@ export default function AdminDashboard() {
       ["Latitude", report.latitude || "N/A"],
       ["Longitude", report.longitude || "N/A"],
       ["GPS Link", gpsLink],
-      ["File URL", report.file_url || report.image_url || "N/A"],
+      [
+        "File URL",
+        report.input_type === "video"
+          ? report.annotated_video_url || report.video_url || "N/A"
+          : report.annotated_image_url || report.image_url || "N/A",
+      ],
       [
         "Created At",
         report.createdAt ? new Date(report.createdAt).toLocaleString() : "N/A",
@@ -235,9 +245,19 @@ export default function AdminDashboard() {
 
                 <tbody>
                   {filteredReports.map((report) => {
-                    const fileUrl = report.file_url || report.image_url;
                     const fileType =
                       report.file_type || report.input_type || "image";
+
+                    const fileUrl =
+                      fileType === "video"
+                        ? report.annotated_video_url ||
+                          report.video_url ||
+                          report.file_url ||
+                          ""
+                        : report.annotated_image_url ||
+                          report.image_url ||
+                          report.file_url ||
+                          "";
 
                     return (
                       <tr
@@ -275,7 +295,9 @@ export default function AdminDashboard() {
                         </td>
 
                         <td className="p-4 font-semibold">
-                          {report.pothole_count ?? 0}
+                          {fileType === "video"
+                            ? (report.frames_with_potholes ?? 0)
+                            : (report.pothole_count ?? 0)}
                         </td>
 
                         <td className="p-4">

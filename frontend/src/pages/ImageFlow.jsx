@@ -161,58 +161,79 @@ export default function ImageFlow() {
     });
   };
 
-  const startProcessing = async () => {
-    if (!file) {
-      setError("Please select an image first.");
-      return;
-    }
+const startProcessing = async () => {
+  if (!file) {
+    setError("Please select an image first.");
+    return;
+  }
 
-    setStep(3);
+  setStep(3);
 
-    const texts = [
-      "CNN checking road condition...",
-      "YOLO detecting pothole boxes...",
-      "Extracting image GPS metadata...",
-      "Saving report to admin dashboard...",
-    ];
+  const texts = [
+    "CNN checking road condition...",
+    "Running YOLO pothole detection...",
+    "Extracting GPS metadata...",
+    "Generating inspection report...",
+  ];
 
-    let i = 0;
-    const textInterval = setInterval(() => {
-      setProcessingText(texts[i % texts.length]);
-      i++;
-    }, 1500);
+  let i = 0;
 
-    const formData = new FormData();
-    formData.append("file", file);
+  const textInterval = setInterval(() => {
+    setProcessingText(texts[i % texts.length]);
+    i++;
+  }, 1500);
 
-    try {
-      const response = await axios.post(
-        `${PYTHON_API}/api/pothole/analyze`,
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } },
-      );
+  const formData = new FormData();
+  formData.append("file", file);
 
-      const result = normalizeResult(response.data.result);
+  try {
+    
 
-      try {
-        await saveReportToAdmin(result);
-      } catch (saveError) {
-        console.error("Admin save failed:", saveError);
+    const response = await axios.post(
+      `${PYTHON_API}/api/pothole/analyze`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       }
+    );
 
-      clearInterval(textInterval);
-      setResults(result);
-      setStep(4);
-    } catch (err) {
-      clearInterval(textInterval);
-      console.error("AI error:", err.response?.data || err.message);
-      setError(
-        err.response?.data?.detail ||
-          "Failed to connect to AI server. Ensure backend is running.",
-      );
-      setStep(1);
-    }
-  };
+    
+
+    const result = normalizeResult(response.data.result);
+
+    clearInterval(textInterval);
+
+    // SHOW RESULT IMMEDIATELY
+    setResults(result);
+    setStep(4);
+
+    // SAVE REPORT IN BACKGROUND
+    saveReportToAdmin(result)
+      .then(() => {
+        console.log("Report saved successfully");
+      })
+      .catch((saveError) => {
+        console.error("Admin save failed:", saveError);
+      });
+
+  } catch (err) {
+    clearInterval(textInterval);
+
+    console.error(
+      "AI ERROR:",
+      err.response?.data || err.message
+    );
+
+    setError(
+      err.response?.data?.detail ||
+      "Failed to connect to AI backend."
+    );
+
+    setStep(1);
+  }
+};
 
   const openInMaps = () => {
     const mapLink = results?.gps_location?.google_maps_link;

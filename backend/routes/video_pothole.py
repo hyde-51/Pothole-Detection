@@ -1,7 +1,6 @@
 import os
 import re
 import json
-import uuid
 import shutil
 import tempfile
 import traceback
@@ -36,12 +35,7 @@ def severity_from_ratio(ratio_percent: float) -> str:
     return "High"
 
 
-def extract_location_from_video(video_path: str) -> Dict[str, Any]:
-    """
-    Extracts GPS from video metadata using ffprobe.
-    Works mainly for original phone camera videos.
-    WhatsApp/downloaded/edited videos usually remove GPS.
-    """
+def extract_location_from_video(video_path: str):
     try:
         cmd = [
             "ffprobe",
@@ -54,27 +48,29 @@ def extract_location_from_video(video_path: str) -> Dict[str, Any]:
             video_path,
         ]
 
-        output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-        metadata = json.loads(output.decode("utf-8", errors="ignore"))
+        output = subprocess.check_output(cmd)
+        metadata = json.loads(output.decode("utf-8"))
 
-        possible_values = []
+        tags = metadata.get("format", {}).get("tags", {})
 
-        format_tags = metadata.get("format", {}).get("tags", {}) or {}
-        possible_values.extend(format_tags.values())
+     
+     
 
-        for stream in metadata.get("streams", []):
-            tags = stream.get("tags", {}) or {}
-            possible_values.extend(tags.values())
-
-        gps_pattern = re.compile(
-            r"([+-]\d+(?:\.\d+)?)([+-]\d+(?:\.\d+)?)"
+        location = (
+            tags.get("location")
+            or tags.get("location-eng")
         )
 
-        for value in possible_values:
-            if not isinstance(value, str):
-                continue
+        
 
-            match = gps_pattern.search(value)
+        if location:
+            # Example:
+            # +19.9771+079.8214/
+
+            match = re.match(
+                r"([+-]\d+\.\d+)([+-]\d+\.\d+)/?",
+                location,
+            )
 
             if match:
                 lat = float(match.group(1))
@@ -87,8 +83,6 @@ def extract_location_from_video(video_path: str) -> Dict[str, Any]:
                     "source": "video_metadata",
                 }
 
-    except FileNotFoundError:
-        print("ffprobe not found. Install FFmpeg to extract video GPS.")
     except Exception as e:
         print("Video GPS extraction error:", e)
 
@@ -99,13 +93,54 @@ def extract_location_from_video(video_path: str) -> Dict[str, Any]:
         "source": None,
     }
 
+def convert_to_browser_mp4(input_path: str) -> str:
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp:
+        output_path = tmp.name
 
-def upload_video_to_cloudinary(video_path: str, folder: str) -> Dict[str, Any]:
+    cmd = [
+        "ffmpeg",
+        "-y",
+        "-i",
+        input_path,
+        "-c:v",
+        "libx264",
+        "-pix_fmt",
+        "yuv420p",
+        "-movflags",
+        "+faststart",
+        output_path,
+    ]
+
+    process = subprocess.run(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+
+    if process.returncode != 0:
+        print("FFmpeg error:", process.stderr)
+        raise Exception("FFmpeg conversion failed.")
+
+    return output_path
+
+
+def upload_video_to_cloudinary(video_path: str, folder: str):
     try:
         result = uploader.upload(
             video_path,
             resource_type="video",
             folder=folder,
+
+            # IMPORTANT
+            eager=[
+                {
+                    "format": "mp4",
+                    "video_codec": "h264",
+                }
+            ],
+
+            eager_async=True,
         )
 
         return {
@@ -127,10 +162,10 @@ def upload_video_to_cloudinary(video_path: str, folder: str) -> Dict[str, Any]:
 
 
 def analyze_video(video_path: str) -> Dict[str, Any]:
-    print("========== VIDEO ANALYSIS START ==========")
+   
 
     gps_location = extract_location_from_video(video_path)
-    print("Video GPS:", gps_location)
+   
 
     cap = cv2.VideoCapture(video_path)
 
@@ -148,18 +183,14 @@ def analyze_video(video_path: str) -> Dict[str, Any]:
     if width <= 0 or height <= 0:
         raise Exception("Invalid video resolution.")
 
-    print("Total Frames:", total_frames)
-    print("Resolution:", width, "x", height)
-    print("FPS:", fps)
-
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp_out:
-        output_path = tmp_out.name
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp_raw:
+        raw_output_path = tmp_raw.name
 
     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-    writer = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+    writer = cv2.VideoWriter(raw_output_path, fourcc, fps, (width, height))
 
     if not writer.isOpened():
-        raise Exception("Failed to create annotated video writer.")
+        raise Exception("Failed to create temporary annotated video.")
 
     processed_frames = 0
     frames_with_potholes = 0
@@ -174,77 +205,52 @@ def analyze_video(video_path: str) -> Dict[str, Any]:
             break
 
         processed_frames += 1
+
+        results = yolo_model.predict(
+            source=frame,
+            conf=YOLO_CONF,
+            verbose=False,
+        )
+
+        r = results[0]
         frame_detections = []
 
-        # Run YOLO every 5th frame for speed
-        if processed_frames % 5 == 0:
-            print(f"Processing frame {processed_frames}")
+        if r.boxes is not None and len(r.boxes) > 0:
+            for box in r.boxes:
+                cls_id = int(box.cls[0])
+                confidence = float(box.conf[0])
+                class_name = str(r.names[cls_id]).lower()
 
-            results = yolo_model.predict(
-                source=frame,
-                conf=YOLO_CONF,
-                verbose=False,
-            )
+                if len(r.names) == 1:
+                    class_name = "pothole"
 
-            r = results[0]
+                if "pothole" not in class_name:
+                    continue
 
-            if r.boxes is not None and len(r.boxes) > 0:
-                for box in r.boxes:
-                    cls_id = int(box.cls[0])
-                    confidence = float(box.conf[0])
-                    class_name = str(r.names[cls_id]).lower()
+                x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())
 
-                    if len(r.names) == 1:
-                        class_name = "pothole"
+                box_w = max(0, x2 - x1)
+                box_h = max(0, y2 - y1)
+                area = box_w * box_h
+                frame_area = width * height
+                damage_ratio = (area / frame_area) * 100 if frame_area else 0
+                severity = severity_from_ratio(damage_ratio)
 
-                    if "pothole" not in class_name:
-                        continue
+                frame_detections.append({
+                    "class_name": class_name,
+                    "confidence": round(confidence, 4),
+                    "severity": severity,
+                    "damage_percentage": round(damage_ratio, 4),
+                    "bbox": {
+                        "x1": x1,
+                        "y1": y1,
+                        "x2": x2,
+                        "y2": y2,
+                    },
+                })
 
-                    x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())
-
-                    box_w = max(0, x2 - x1)
-                    box_h = max(0, y2 - y1)
-                    area = box_w * box_h
-                    frame_area = width * height
-                    damage_ratio = (area / frame_area) * 100 if frame_area else 0
-
-                    severity = severity_from_ratio(damage_ratio)
-
-                    color = (0, 0, 255)
-                    if severity == "Medium":
-                        color = (0, 165, 255)
-                    elif severity == "Low":
-                        color = (0, 255, 0)
-
-                    cv2.rectangle(frame, (x1, y1), (x2, y2), color, 3)
-
-                    label = f"Pothole {confidence:.2f} | {severity}"
-                    cv2.putText(
-                        frame,
-                        label,
-                        (x1, max(25, y1 - 10)),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        0.7,
-                        color,
-                        2,
-                        cv2.LINE_AA,
-                    )
-
-                    frame_detections.append({
-                        "class_name": class_name,
-                        "confidence": round(confidence, 4),
-                        "severity": severity,
-                        "damage_percentage": round(damage_ratio, 4),
-                        "bbox": {
-                            "x1": x1,
-                            "y1": y1,
-                            "x2": x2,
-                            "y2": y2,
-                        },
-                    })
-
-                    total_pothole_boxes += 1
-                    max_damage = max(max_damage, damage_ratio)
+                total_pothole_boxes += 1
+                max_damage = max(max_damage, damage_ratio)
 
         if frame_detections:
             frames_with_potholes += 1
@@ -253,23 +259,28 @@ def analyze_video(video_path: str) -> Dict[str, Any]:
                 "detections": frame_detections,
             })
 
-        writer.write(frame)
+        # YOLO built-in annotated frame
+        annotated_frame = r.plot()
+        writer.write(annotated_frame)
 
     cap.release()
     writer.release()
 
-    print("Uploading annotated video to Cloudinary...")
+    converted_path = convert_to_browser_mp4(raw_output_path)
+
+  
     annotated_upload = upload_video_to_cloudinary(
-        output_path,
+        converted_path,
         folder="pothole_ai/videos/annotated",
     )
 
-    try:
-        os.remove(output_path)
-    except OSError:
-        pass
+    for path in [raw_output_path, converted_path]:
+        try:
+            os.remove(path)
+        except OSError:
+            pass
 
-    print("========== VIDEO ANALYSIS END ==========")
+
 
     return {
         "final_verdict": "pothole_found"
@@ -305,12 +316,9 @@ async def analyze_video_route(file: UploadFile = File(...)):
     temp_path = None
 
     try:
-        print("========== VIDEO API START ==========")
-        print("Uploaded filename:", file.filename)
-        print("Content type:", file.content_type)
+      
 
         suffix = os.path.splitext(file.filename or "")[1].lower()
-
         if suffix not in [".mp4", ".mov", ".avi", ".webm", ".mkv"]:
             suffix = ".mp4"
 
@@ -330,7 +338,7 @@ async def analyze_video_route(file: UploadFile = File(...)):
         raise
 
     except Exception as e:
-        print("========== VIDEO API ERROR ==========")
+
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
