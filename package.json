@@ -2,9 +2,15 @@
   "name": "pothole-detection-system",
   "version": "2.0.0",
   "scripts": {
-    "start:backend": "cd backend && python -m uvicorn main:app --reload",
+    "// --- Main App (Python BE + React FE) ---": "",
+    "start:backend": "cd backend && python -m uvicorn main:app --reload --port 8000",
     "start:frontend": "cd frontend && npm run dev",
-    "dev": "concurrently \"npm run start:backend\" \"npm run start:frontend\""
+    "dev": "concurrently -n \"PY-BE,FE\" -c \"magenta,blue\" \"npm run start:backend\" \"npm run start:frontend\"",
+
+    "// --- Admin App (Node BE + React FE) ---": "",
+    "start:admin-be": "cd admin/admin-backend && npm start",
+    "start:admin-fe": "cd admin/admin-frontend && npm run dev",
+    "admin-dev": "concurrently -n \"NODE-BE,ADM-FE\" -c \"yellow,green\" \"npm run start:admin-be\" \"npm run start:admin-fe\""
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

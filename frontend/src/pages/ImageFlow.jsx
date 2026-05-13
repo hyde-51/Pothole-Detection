@@ -318,10 +318,14 @@ const startProcessing = async () => {
   return (
     <div className="min-h-screen bg-primary text-content px-6 py-10 transition-colors duration-300">
       <div className="w-full max-w-[1500px] mx-auto px-4">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5 mb-8 animate-fadeUp">
+        
+        
+        <div className="relative flex flex-col md:flex-row items-center md:justify-center gap-5 mb-8 animate-fadeUp">
+          
+          
           <button
             onClick={() => navigate("/dashboard")}
-            className="w-fit flex items-center gap-2 bg-secondary border border-borderline text-muted hover:text-content px-5 py-3 rounded-xl font-semibold transition-all"
+            className="self-start md:self-auto md:absolute md:left-0 w-fit flex items-center gap-2 bg-secondary border border-borderline text-muted hover:text-content px-5 py-3 rounded-xl font-semibold transition-all"
           >
             <ArrowLeft size={20} />
             Back
@@ -334,13 +338,6 @@ const startProcessing = async () => {
             <h1 className="text-3xl md:text-4xl font-bold mt-1">
               CNN + YOLO Pothole Analysis
             </h1>
-          </div>
-
-          <div className="hidden md:flex items-center gap-2 bg-secondary border border-borderline px-5 py-3 rounded-xl">
-            <Camera size={20} className="text-accent" />
-            <span className="text-muted font-semibold text-sm">
-              AI Engine Active
-            </span>
           </div>
         </div>
 

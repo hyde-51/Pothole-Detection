@@ -11,7 +11,10 @@ import {
   FileText,
   Activity,
   BarChart3,
+  Plus, 
+  Minus
 } from "lucide-react";
+import FAQSection from './FAQSection';
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -51,7 +54,7 @@ export default function LandingPage() {
             </h1>
 
             <p className="text-lg md:text-xl text-muted leading-relaxed mb-8 max-w-xl">
-              Deploying Hybrid Deep Learning using YOLOv8 and Faster R-CNN to
+              Deploying Deep Learning using YOLOv8 and Faster R-CNN to
               detect, map, and analyze infrastructure decay from road images.
             </p>
 
@@ -74,48 +77,74 @@ export default function LandingPage() {
           </div>
 
           {/* RIGHT PREVIEW CARD */}
-          <div className="bg-secondary border border-borderline rounded-3xl shadow-card p-6 animate-float">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <p className="text-sm text-muted font-semibold">
-                  AI ROAD SCAN
-                </p>
-                <h2 className="text-2xl font-bold">
-                  Detection Preview
-                </h2>
-              </div>
+          {/* THE DETECTION PREVIEW CARD */}
+<div className="bg-[#111111] border border-slate-800 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
+  
+  {/* Header */}
+  <div className="flex justify-between items-center mb-6">
+    <div>
+      <p className="text-slate-500 text-xs font-bold tracking-widest uppercase mb-1">
+        AI Road Scan
+      </p>
+      <h3 className="text-2xl font-bold text-white">Detection Preview</h3>
+    </div>
+    <div className="w-10 h-10 rounded-lg bg-slate-900 border border-slate-700 flex items-center justify-center">
+      <Cpu className="text-blue-500" size={20} />
+    </div>
+  </div>
 
-              <div className="w-12 h-12 rounded-xl bg-primary text-accent flex items-center justify-center border border-borderline">
-                <Cpu size={26} />
-              </div>
-            </div>
+  {/* Simulation Window */}
+  <div className="relative w-full h-[250px] bg-black rounded-xl overflow-hidden border border-slate-700">
+    
+    
+    <img 
+      src="https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=800&q=80" 
+      alt="Road surface" 
+      className="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-luminosity"
+    />
 
-            <div className="relative h-[300px] bg-primary border border-borderline rounded-2xl overflow-hidden flex items-center justify-center">
-              <div className="absolute top-0 left-0 w-full h-1 bg-accent animate-scanLine" />
+    
+    <div className="absolute top-0 left-0 w-full h-[2px] bg-green-500 shadow-[0_0_15px_rgba(34,197,94,0.8)] animate-scan z-20"></div>
 
-              <div className="absolute top-12 left-10 w-40 h-24 border-4 border-red-500 bg-red-500/10 rounded-xl animate-boxPulse">
-                <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-br-lg">
-                  HIGH 94%
-                </span>
-              </div>
+    {/* High Severity Bounding Box */}
+    <div className="absolute top-[20%] left-[15%] w-[35%] h-[40%] border-2 border-red-500 rounded bg-red-500/10 z-10 transition-all duration-500">
+       <div className="absolute -top-3 -left-[2px] bg-red-500 text-white text-[10px] font-black px-2 py-1 rounded shadow-lg">
+         HIGH 94%
+       </div>
+    </div>
 
-              <div className="absolute bottom-12 right-10 w-32 h-20 border-4 border-amber-500 bg-amber-500/10 rounded-xl animate-boxPulse delay-300">
-                <span className="bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-br-lg">
-                  MEDIUM 78%
-                </span>
-              </div>
+    {/* Medium Severity Bounding Box */}
+    <div className="absolute top-[55%] right-[15%] w-[25%] h-[30%] border-2 border-amber-500 rounded bg-amber-500/10 z-10 transition-all duration-500">
+       <div className="absolute -top-3 -left-[2px] bg-amber-500 text-white text-[10px] font-black px-2 py-1 rounded shadow-lg">
+         MEDIUM 78%
+       </div>
+    </div>
 
-              <p className="text-muted font-semibold tracking-widest text-sm">
-                AI VISION SIMULATION
-              </p>
-            </div>
+    {/* Faint Background Text */}
+    <div className="absolute inset-0 flex items-center justify-center z-0">
+       <span className="text-white/20 font-bold tracking-[0.2em] text-sm uppercase">
+         AI Vision Simulation
+       </span>
+    </div>
+  </div>
 
-            <div className="grid grid-cols-3 gap-4 mt-6">
-              <MiniStat title="Potholes" value="24" />
-              <MiniStat title="Severity" value="High" />
-              <MiniStat title="Report" value="PDF" />
-            </div>
-          </div>
+  {/* Bottom Stats Row */}
+  <div className="grid grid-cols-3 gap-3 mt-6">
+    <div className="bg-[#0A0A0A] border border-slate-800 rounded-xl p-3">
+      <p className="text-slate-500 text-[10px] font-bold uppercase mb-1">Potholes</p>
+      <p className="text-white font-bold text-lg">24</p>
+    </div>
+    <div className="bg-[#0A0A0A] border border-slate-800 rounded-xl p-3">
+      <p className="text-slate-500 text-[10px] font-bold uppercase mb-1">Severity</p>
+      <p className="text-white font-bold text-lg">High</p>
+    </div>
+    <div className="bg-[#0A0A0A] border border-slate-800 rounded-xl p-3">
+      <p className="text-slate-500 text-[10px] font-bold uppercase mb-1">Report</p>
+      <p className="text-white font-bold text-lg">PDF</p>
+    </div>
+  </div>
+
+</div>
         </div>
       </section>
 
@@ -247,9 +276,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-
+    <FAQSection />
       {/* CTA */}
-      <section className="px-6 py-20 bg-secondary border-t border-borderline transition-colors duration-300">
+      <section className="px-6 py-20 bg-cta border-t border-borderline transition-colors duration-300">
         <div className="max-w-[1000px] mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             Start Road Damage Analysis
@@ -269,6 +298,22 @@ export default function LandingPage() {
           </button>
         </div>
       </section>
+
+      {/*COPYRIGHT FOOTER*/}
+
+      <footer className="bg-primary border-t border-borderline">
+        <div className="max-w-[1200px] mx-auto px-6 py-8 flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 bg-accent rounded-md flex items-center justify-center">
+              <span className="text-white text-[10px] font-black">AI</span>
+            </div>
+            <span className="text-content font-bold tracking-wide">Next-Gen Road Analytics</span>
+          </div>
+          <p className="text-muted text-sm font-medium">
+            &copy; {new Date().getFullYear()} @Coders. All rights reserved.
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
